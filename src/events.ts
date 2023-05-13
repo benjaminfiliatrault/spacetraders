@@ -1,8 +1,11 @@
+import * as fs from "fs";
+import * as path from "path";
 import { RequestOptions } from "http";
 import { EventEmitter } from "stream";
+import { registerAgent } from "./adapters/account";
 const eventEmitter = new EventEmitter();
 
-eventEmitter.on(SpaceEvents["INVALID_TOKEN"], () => {
+eventEmitter.on(SpaceEvents["INVALID_TOKEN"], async () => {
   // TODO: Implement a refresh access token logic
 });
 

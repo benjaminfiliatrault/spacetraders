@@ -1,5 +1,4 @@
-import { spaceGet } from "../api";
-import { API } from "../api/endpoints";
+import { getContract, listContracts } from "../adapters/contract";
 
 export class ContractData {
     /** Current contract */
@@ -17,12 +16,12 @@ export class ContractData {
             return this.current;
         }
         
-        this.current = await spaceGet<Contract>(API.CONTRACT(contractId));
+        this.current = await getContract(contractId);
         return this.current
     }
 
     async list() {
-        this.contracts = await spaceGet<Contracts>(API['CONTRACTS']);
+        this.contracts = await listContracts();
         return this.contracts;
     }
 }

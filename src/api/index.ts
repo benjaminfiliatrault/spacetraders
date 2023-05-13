@@ -18,7 +18,7 @@ export const spaceGet = async <T>(path: string, options?: RequestOptions): Promi
   return response.body;
 };
 
-export const spacePost = async <T>(path: string, data: AnyObject = {}, options?: RequestOptions): Promise<T> => {
+export const spacePost = async <T>(path: string, data: AnyObject = {}, options?: RequestOptions): Promise<T | any> => {
   const reqOptions = { ...options, method: "POST", path };
   const request = new RequestCreator({ options: reqOptions });
   const response = await request.post(data);

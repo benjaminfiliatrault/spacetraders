@@ -1,4 +1,5 @@
 export const API = {
+  REGISTER_AGENT: "register",
   ACCOUNT_INFO: "my/agent",
 
   // 👇 Location stuff
