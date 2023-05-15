@@ -5,10 +5,16 @@ import { API } from "../api/endpoints";
 export const listAvailableShips = (systemSymbol: string, shipyardWaypointSymbol: string) =>
   spaceGet<AvailableShips>(API.AVAILABLE_SHIPS(systemSymbol, shipyardWaypointSymbol));
 
-
-export const purchaseShip = (shipType: ShipTypes, shipyardWaypointSymbol: string) => spacePost<void>(API["PURCHASE_SHIP"], {
+export const purchaseShip = (shipType: ShipTypes, shipyardWaypointSymbol: string) =>
+  spacePost<void>(API["PURCHASE_SHIP"], {
     shipType,
-    waypointSymbol: shipyardWaypointSymbol
-})
+    waypointSymbol: shipyardWaypointSymbol,
+  });
 
-export const listShips = () => spaceGet<Ship[]>(API["LIST_SHIPS"])
+export const listShips = () => spaceGet<Ship[]>(API["LIST_SHIPS"]);
+
+export const navigateShip = (shipSymbol: string, waypointSymbol: string) => {
+  return spacePost(API.NAVIGATE_SHIP(shipSymbol), {
+    waypointSymbol,
+  });
+};

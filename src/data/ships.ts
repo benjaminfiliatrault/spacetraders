@@ -16,14 +16,14 @@ export class ShipData {
     return myShips;
   }
 
-  async getMiningShip(updated?: boolean) {
+  async getMiningShip(updated?: boolean): Promise<Ship | undefined> {
     const miningShip = this.ships?.find((ship) => {
-      ship.registration.role === "EXCAVATOR";
+      return ship.registration.role === "EXCAVATOR";
     });
 
     if (!miningShip && !updated) {
       await this.listShips();
-      await this.getMiningShip(true);
+      return await this.getMiningShip(true);
     }
 
     return miningShip;
@@ -44,7 +44,7 @@ export class ShipData {
     return availableShips;
   }
 
-  async purchaseShips(shipType: ShipTypes, shipyardWaypointSymbol: string) {
+  async purchaseShip(shipType: ShipTypes, shipyardWaypointSymbol: string) {
     await purchaseShip(shipType, shipyardWaypointSymbol);
   }
 }

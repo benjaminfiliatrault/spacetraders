@@ -9,8 +9,8 @@ export class Datastore {
   shipyards!: any;
 
   constructor() {
-    const accountData = new AccountData().get();
-    const contractData = new ContractData().list();
+    const accountData = new AccountData().get()
+    const contractData = new ContractData().list()
 
     this.ready = Promise.all([accountData, contractData])
       .then((data) => {
@@ -18,9 +18,9 @@ export class Datastore {
         this.contracts = data[1];
       })
       .catch((error) => {
-        console.log("[ERROR] DATASTORE", error);
         throw new SpaceError({
           message: "An error occurred in Datastore",
+          data: error,
           type: "http",
         });
       });

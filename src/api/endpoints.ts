@@ -16,4 +16,5 @@ export const API = {
     `systems/${systemSymbol}/waypoints/${shipyardWaypointSymbol}/shipyard`,
   PURCHASE_SHIP: "my/ships",
   LIST_SHIPS: "my/ships",
+  NAVIGATE_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}/navigate`
 };
