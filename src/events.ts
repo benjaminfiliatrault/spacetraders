@@ -1,17 +1,21 @@
-import * as fs from "fs";
-import * as path from "path";
 import { RequestOptions } from "http";
 import { EventEmitter } from "stream";
-import { registerAgent } from "./adapters/account";
+import { ReverseSpaceEventsMap, SpaceEventsMap } from "./utils/events.map";
 const eventEmitter = new EventEmitter();
 
-eventEmitter.on(SpaceEvents["INVALID_TOKEN"], async () => {
+eventEmitter.on(ReverseSpaceEventsMap["INVALID_TOKEN"], async () => {
   // TODO: Implement a refresh access token logic
 });
 
-eventEmitter.on(SpaceEvents["RETRY_REQUEST"], (options: RequestOptions, retryAfter: number) => {
+eventEmitter.on(ReverseSpaceEventsMap["RETRY_REQUEST"], (options: RequestOptions, retryAfter: number) => {
   // TODO: Implement the logic
   // sleep()
 });
+
+eventEmitter.on(ReverseSpaceEventsMap["SPACESHIP_IN_TRANSIT"], (data) => {
+  console.log(data);
+  
+
+})
 
 export default eventEmitter;

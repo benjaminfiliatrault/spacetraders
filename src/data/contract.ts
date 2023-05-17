@@ -15,7 +15,7 @@ export class ContractData {
   }
 
   async list() {
-    this.contracts = await listContracts();
+    this.contracts = (await listContracts()).body;
     return this.contracts;
   }
 

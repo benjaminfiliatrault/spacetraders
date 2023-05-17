@@ -1,6 +1,7 @@
 import * as https from "https";
 import { ClientRequest, IncomingHttpHeaders } from "http";
 import eventEmitter from "../events";
+import { SpaceEventsMap } from "../utils/events.map";
 
 const BASE_URL = "api.spacetraders.io";
 
@@ -9,11 +10,12 @@ interface RequestCreatorParams {
   options: https.RequestOptions;
 }
 
-interface Response<T> {
-  statusCode: number;
+export interface Response<T> {
   headers: IncomingHttpHeaders;
-  body: T;
+  statusCode: number;
+  failRequest: boolean
   error?: AnyObject;
+  body: T;
 }
 
 export class RequestCreator {
@@ -26,7 +28,7 @@ export class RequestCreator {
 
   constructor(params: RequestCreatorParams) {
     this.buffer = "";
-    this.response = { headers: {}, body: {}, statusCode: 500 };
+    this.response = { failRequest: false, headers: {}, body: {}, statusCode: 500 };
     this.options = this._getOptions(params.options);
   }
 
@@ -37,8 +39,10 @@ export class RequestCreator {
       });
       res.on("close", async () => {
         const { data, error } = JSON.parse(this.buffer);
-        await this._inspector(error);
+        const failRequest = await this._inspector(error);
+
         this.response = {
+          failRequest,
           statusCode: data?.code || error?.code || 500,
           headers: res.headers,
           body: data,
@@ -59,17 +63,19 @@ export class RequestCreator {
     return request;
   }
 
-  private async _inspector(error?: AnyObject) {
-    if (!error) return;
+  /** Returns TRUE if we need to fail the request */
+  private async _inspector(error?: ResponseError): Promise<boolean> {
+    if (!error) return false;
 
-    if (error.code === 4104) {
-      eventEmitter.emit(SpaceEvents["INVALID_TOKEN"]);
-    }
+    let failRequest = false;
 
-    if (error.code == 429) {
-      const retryAfter = Number.parseInt(this.response.headers["retry-after"] || "0", 10);
-      eventEmitter.emit(SpaceEvents["RETRY_REQUEST"], this.options, retryAfter);
-    }
+    const data = error.code == 429 ? this.response.headers["retry-after"] || "0" : error?.data 
+
+    eventEmitter.emit(SpaceEventsMap[error.code as keyof typeof SpaceEventsMap], data);
+
+    if (error.code >= 500 && error.code < 4000) failRequest = true;
+
+    return failRequest;
   }
 
   private _handleRequestError(req: ClientRequest) {
@@ -99,7 +105,7 @@ export class RequestCreator {
   }
 
   async get<T>() {
-    return new Promise<Response<T | any>>((resolve) => {
+    return new Promise<Response<T>>((resolve) => {
       this._builder(() => resolve(this.response));
     });
   }

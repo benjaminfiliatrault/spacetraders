@@ -1,7 +1,7 @@
-import { listAvailableShips, listShips, purchaseShip } from "../adapters/ship";
-import { getWaypoints } from "../adapters/waypoint";
+import { dockShip, extractShip, listAvailableShips, listShips, orbitShip, purchaseShip, refuelShip } from "../adapters/ship";
 
 export class ShipData {
+  current?: Ship;
   ships: Ship[];
   shipyards!: any;
 
@@ -10,41 +10,53 @@ export class ShipData {
   }
 
   /** List the ships in my inventory */
-  async listShips() {
-    const myShips = await listShips();
-    this.ships = myShips;
-    return myShips;
+  async list() {
+    const { body } = await listShips();
+    this.ships = body;
+    return this.ships;
   }
 
-  async getMiningShip(updated?: boolean): Promise<Ship | undefined> {
+  async useMining(updated?: boolean): Promise<Ship | undefined> {
     const miningShip = this.ships?.find((ship) => {
       return ship.registration.role === "EXCAVATOR";
     });
 
     if (!miningShip && !updated) {
-      await this.listShips();
-      return await this.getMiningShip(true);
+      await this.list();
+      return await this.useMining(true);
     }
 
-    return miningShip;
+    this.current = miningShip;
+
+    return this.current;
   }
 
-  async findShipyard(systemSymbol: string) {
-    const waypoints = await getWaypoints(systemSymbol);
-    const orbitalStation = waypoints.find((location) => {
-      const hisOrbitalStation = location.type === "ORBITAL_STATION";
-      const hasShipyards = location?.traits.some((t) => t.symbol === "SHIPYARD");
-      return hisOrbitalStation && hasShipyards;
-    });
-    return orbitalStation;
+  async listAvailable(systemSymbol: string, shipyardWaypointSymbol: string) {
+    const { body } = await listAvailableShips(systemSymbol, shipyardWaypointSymbol);
+    return body;
   }
 
-  async getAvailableShips(systemSymbol: string, shipyardWaypointSymbol: string) {
-    const availableShips = await listAvailableShips(systemSymbol, shipyardWaypointSymbol);
-    return availableShips;
-  }
-
-  async purchaseShip(shipType: ShipTypes, shipyardWaypointSymbol: string) {
+  async purchase(shipType: ShipTypes, shipyardWaypointSymbol: string) {
     await purchaseShip(shipType, shipyardWaypointSymbol);
+  }
+
+  async dock() {
+    if (!this.current) return;
+    await dockShip(this.current.symbol);
+  }
+
+  async refuel() {
+    if (!this.current) return;
+    await refuelShip(this.current?.symbol);
+  }
+
+  async orbit() {
+    if (!this.current) return;
+    await orbitShip(this.current?.symbol);
+  }
+
+  async extract() {
+    if (!this.current) return;
+    return await extractShip(this.current?.symbol);
   }
 }

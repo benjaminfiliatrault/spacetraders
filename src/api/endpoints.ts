@@ -16,5 +16,9 @@ export const API = {
     `systems/${systemSymbol}/waypoints/${shipyardWaypointSymbol}/shipyard`,
   PURCHASE_SHIP: "my/ships",
   LIST_SHIPS: "my/ships",
-  NAVIGATE_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}/navigate`
+  NAVIGATE_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}/navigate`,
+  DOCK_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}/dock`,
+  REFUEL_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}/refuel`,
+  ORBIT_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}/orbit`,
+  EXTRACT_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}/extract`,
 };

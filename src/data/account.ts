@@ -7,7 +7,7 @@ export class AccountData {
   constructor() {}
 
   async get() {
-    this.data = await getAccountInfo();
+    this.data = (await getAccountInfo()).body;
     return this.data;
   }
 }
