@@ -5,6 +5,7 @@ export const API = {
   // 👇 Location stuff
   WAYPOINT: (systemSymbol: string, waypointSymbol: string) => `systems/${systemSymbol}/waypoints/${waypointSymbol}`,
   WAYPOINTS: (systemSymbol: string) => `systems/${systemSymbol}/waypoints`,
+  MARKET_WAYPOINTS: (systemSymbol: string, asteroidFieldWaypointSymbol: string) => `systems/${systemSymbol}/waypoints/${asteroidFieldWaypointSymbol}/market`,
 
   // 👇 Contract Stuff
   CONTRACTS: "my/contracts",
@@ -21,4 +22,7 @@ export const API = {
   REFUEL_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}/refuel`,
   ORBIT_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}/orbit`,
   EXTRACT_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}/extract`,
+  /** Details about the given ship */
+  DETAILS_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}`,
+  SELL_CARGO_SHIP: (shipSymbol: string) => `my/ships/${shipSymbol}/sell`,
 };

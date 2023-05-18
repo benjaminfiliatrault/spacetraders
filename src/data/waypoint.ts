@@ -1,4 +1,4 @@
-import { getWaypoints } from "../adapters/waypoint";
+import { getMarketWaypoints, getWaypoints } from "../adapters/waypoint";
 
 export class WaypointData {
   /** Where we are */
@@ -30,5 +30,10 @@ export class WaypointData {
       return hisOrbitalStation;
     });
     return asteroid;
+  }
+
+  async marketData(systemSymbol: string, asteroidFieldWaypointSymbol: string) {
+    const { body } = await getMarketWaypoints(systemSymbol, asteroidFieldWaypointSymbol);
+    return body;
   }
 }

@@ -1,4 +1,16 @@
-import { dockShip, extractShip, listAvailableShips, listShips, orbitShip, purchaseShip, refuelShip } from "../adapters/ship";
+import { sleep } from "../utils/utils";
+import {
+  dockShip,
+  extractShip,
+  getDetailsShip,
+  listAvailableShips,
+  listShips,
+  navigateShip,
+  orbitShip,
+  purchaseShip,
+  refuelShip,
+  sellCargoShip,
+} from "../adapters/ship";
 
 export class ShipData {
   current?: Ship;
@@ -40,6 +52,11 @@ export class ShipData {
     await purchaseShip(shipType, shipyardWaypointSymbol);
   }
 
+  async navigate(waypoint: string) {
+    if (!this.current) return;
+    return await navigateShip(this.current.symbol, waypoint);
+  }
+
   async dock() {
     if (!this.current) return;
     await dockShip(this.current.symbol);
@@ -58,5 +75,21 @@ export class ShipData {
   async extract() {
     if (!this.current) return;
     return await extractShip(this.current?.symbol);
+  }
+
+  async details() {
+    if (!this.current) return;
+    this.current = (await getDetailsShip<Ship>(this.current.symbol)).body;
+    return this.current
+  }
+
+  async sellCargo(contract: Contract) {
+    if (!this.current) return;
+    for await (const item of this.current.cargo.inventory) {      
+      if (contract.terms.deliver.some(term => term.tradeSymbol === item.symbol)) continue
+      const res = await sellCargoShip(this.current.symbol, item)
+      await sleep(2000);
+      console.log('Selling Cargo stuff: \n',res?.body)
+    }
   }
 }

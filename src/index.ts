@@ -1,30 +1,31 @@
 require("dotenv").config();
-import { navigateShip } from "./adapters/ship";
-import { ContractData } from "./data";
-import { ShipData } from "./data/ships";
-import { WaypointData } from "./data/waypoint";
-import { Datastore } from "./datastore";
-import { parseWaypoint } from "./utils/utils";
+import * as http from "node:http";
+import { main } from "./main";
 
-async function main() {
-  try {
-    const data = new Datastore();
-    await data.ready;
+const PORT = 42069;
 
-    const waypointData = new WaypointData();
-    const ship = new ShipData();
+(async() => {
+  await main();
 
-    const myShips = await ship.useMining();
 
-    if (!myShips) return;
+})()
 
-    const res = await ship.extract();
+// const server = http.createServer(async (req, res) => {
+  // try {
+  // } catch (error) {
+  //   console.error(error);
+  // }
 
-    console.log(res);
-    
-  } catch (error) {
-    console.log(error);
-  }
-}
+//   let bodyRequest = "";
+//   res.on("data", (chunk) => (bodyRequest += chunk));
+//   res.on("close", () => console.log("Server called"));
+//   res.end();
+// });
 
-main();
+// server.on("clientError", (err, socket) => {
+//   socket.end("HTTP/1.1 400 Bad Request\r\n\r\n");
+// });
+
+// server.listen(PORT, () => {
+//   console.log(`Server is listening on port: ${PORT}`);
+// });
