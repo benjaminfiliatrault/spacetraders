@@ -3,7 +3,7 @@ export type ErrorType = "http" | "other";
 export interface SpaceErrorParams {
   message: string;
   data?: AnyObject;
-  type: ErrorType;
+  type?: ErrorType;
 }
 
 export class SpaceError extends Error {

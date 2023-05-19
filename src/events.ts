@@ -13,7 +13,7 @@ eventEmitter.on(ReverseSpaceEventsMap["RETRY_REQUEST"], (options: RequestOptions
 });
 
 eventEmitter.on(ReverseSpaceEventsMap["SPACESHIP_IN_TRANSIT"], (data) => {
-  console.log(data);
+  logger.print(data);
   
 
 })

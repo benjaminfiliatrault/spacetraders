@@ -6,3 +6,6 @@ export const getContract = (contractId: string) => spaceGet<Contract>(API.CONTRA
 export const listContracts = () => spaceGet<Contracts>(API["CONTRACTS"]);
 
 export const acceptContract = (contractId: string) => spacePost(API.ACCEPT_CONTRACT(contractId));
+
+export const deliverContract = (contractId: string, body: { shipSymbol: string, tradeSymbol: string; units: number }) =>
+  spacePost(API.DELIVER_CONTRACT(contractId), body);

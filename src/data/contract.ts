@@ -1,4 +1,4 @@
-import { acceptContract, getContract, listContracts } from "../adapters/contract";
+import { acceptContract, deliverContract, getContract, listContracts } from "../adapters/contract";
 
 export class ContractData {
   /** Current contract */
@@ -9,9 +9,11 @@ export class ContractData {
   constructor() {}
 
   async get(contractId: string) {
-    const exists = this.contracts.find((c) => c.id == contractId);
+    const exists = this.contracts?.find((c) => c.id == contractId);
     if (exists) return exists;
-    return await getContract(contractId);
+    const { body } = await getContract(contractId);
+    this.current = body;
+    return this.current;
   }
 
   async list() {
@@ -25,5 +27,11 @@ export class ContractData {
     if (!this.contracts.length) this.list();
 
     this.current = this?.contracts?.find((c) => c.id === contractId);
+  }
+
+  async deliver(params: { contractId: string; tradeSymbol: string; units: number; shipSymbol: string }) {
+    const { contractId, ...body } = params;
+    const res = await deliverContract(contractId, body);
+    return res;
   }
 }

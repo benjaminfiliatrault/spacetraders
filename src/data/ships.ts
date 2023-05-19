@@ -11,6 +11,7 @@ import {
   refuelShip,
   sellCargoShip,
 } from "../adapters/ship";
+import logger from "../utils/logger";
 
 export class ShipData {
   current?: Ship;
@@ -52,9 +53,18 @@ export class ShipData {
     await purchaseShip(shipType, shipyardWaypointSymbol);
   }
 
-  async navigate(waypoint: string) {
+  async navigate({ waypoint, needRefuel, where }: { waypoint: string; needRefuel?: boolean, where: string }) {
     if (!this.current) return;
-    return await navigateShip(this.current.symbol, waypoint);
+    await navigateShip(this.current.symbol, waypoint);
+    this.details();
+
+    const arrivalTimeInMili = new Date(this.current?.nav.route.arrival).getTime() - new Date().getTime();
+
+    await sleep(arrivalTimeInMili, `Navigating to: ${where} - ${waypoint}`);
+
+    await this.dock();
+
+    if (needRefuel) await this.refuel();
   }
 
   async dock() {
@@ -79,17 +89,18 @@ export class ShipData {
 
   async details() {
     if (!this.current) return;
-    this.current = (await getDetailsShip<Ship>(this.current.symbol)).body;
-    return this.current
+    const { body } = await getDetailsShip<Ship>(this.current.symbol);
+    this.current = body;
+    return this.current;
   }
 
-  async sellCargo(contract: Contract) {
+  async sellCargo({ excludeSymbols }: { excludeSymbols: string[] }) {
     if (!this.current) return;
-    for await (const item of this.current.cargo.inventory) {      
-      if (contract.terms.deliver.some(term => term.tradeSymbol === item.symbol)) continue
-      const res = await sellCargoShip(this.current.symbol, item)
-      await sleep(2000);
-      console.log('Selling Cargo stuff: \n',res?.body)
+    for await (const item of this.current.cargo.inventory) {
+      if (excludeSymbols.some((symbol) => symbol === item.symbol)) continue;
+      const res = await sellCargoShip(this.current.symbol, item);
+      await sleep(2000, "Selling cargo");
+      logger.print("Selling Cargo stuff: \n", res?.body);
     }
   }
 }

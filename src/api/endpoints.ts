@@ -11,6 +11,7 @@ export const API = {
   CONTRACTS: "my/contracts",
   CONTRACT: (contractId: string) => `my/contracts/${contractId}`,
   ACCEPT_CONTRACT: (contractId: string) => `my/contracts/${contractId}/accept`,
+  DELIVER_CONTRACT: (contractId: string) => `my/contracts/${contractId}/deliver`,
 
   // 👇 Ship Stuff
   AVAILABLE_SHIPS: (systemSymbol: string, shipyardWaypointSymbol: string) =>
