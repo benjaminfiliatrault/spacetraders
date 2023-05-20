@@ -56,7 +56,7 @@ export class ShipData {
   async navigate({ waypoint, needRefuel, where }: { waypoint: string; needRefuel?: boolean, where: string }) {
     if (!this.current) return;
     await navigateShip(this.current.symbol, waypoint);
-    this.details();
+    await this.details();
 
     const arrivalTimeInMili = new Date(this.current?.nav.route.arrival).getTime() - new Date().getTime();
 
