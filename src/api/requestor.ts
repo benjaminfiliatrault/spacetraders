@@ -1,7 +1,6 @@
 import * as https from "https";
 import { ClientRequest, IncomingHttpHeaders } from "http";
-import eventEmitter from "../events";
-import { SpaceEventsMap } from "../utils/events.map";
+import { sleep } from "../utils/utils";
 
 const BASE_URL = "api.spacetraders.io";
 
@@ -13,68 +12,84 @@ interface RequestCreatorParams {
 export interface Response<T> {
   headers: IncomingHttpHeaders;
   statusCode: number;
-  failRequest: boolean
+  failRequest: boolean;
   error?: AnyObject;
   body: T;
 }
 
+interface InspectorParams {
+  headers: IncomingHttpHeaders;
+  statusCode: number;
+}
+
 export class RequestCreator {
-  private buffer: string;
+  private buffer: Buffer;
   private response: Response<any>;
 
+  private request?: ClientRequest;
   options: https.RequestOptions;
 
   body?: AnyObject;
 
   constructor(params: RequestCreatorParams) {
-    this.buffer = "";
+    this.buffer = Buffer.alloc(0);
     this.response = { failRequest: false, headers: {}, body: {}, statusCode: 500 };
     this.options = this._getOptions(params.options);
   }
 
-  private async _builder(done: () => void, data?: AnyObject) {
-    const request = https.request(this.options, (res) => {
+  private async _builder<T>(data?: AnyObject) {
+    return new Promise<Response<T>>((resolve) => {
+      this.request = this._request(() => resolve(this.response));
+      this._handleRequestError(this.request);
+      if (data) {
+        const body = JSON.stringify(data);
+        this.request.setHeader("content-length", body.length);
+        this.request.write(body);
+      }
+      this.request.setTimeout(20000, this.request.destroy);
+      this.request.end();
+    });
+  }
+
+  private _request(done: () => void) {
+    return https.request(this.options, (res) => {
       res.on("data", (chunk) => {
-        this.buffer += chunk;
+        this.buffer = Buffer.concat([this.buffer, chunk]);
       });
       res.on("close", async () => {
-        const { data, error } = JSON.parse(this.buffer);
-        const failRequest = await this._inspector(error);
+        try {
+          const { data, error } = JSON.parse(this.buffer.toString());
+          const failRequest = this._shouldFailRequest(error);
 
-        this.response = {
-          failRequest,
-          statusCode: data?.code || error?.code || 500,
-          headers: res.headers,
-          body: data,
-          error,
-        };
-        done();
+          this.response = {
+            failRequest,
+            statusCode: data?.code || error?.code || res.statusCode || 500,
+            headers: res.headers,
+            body: data,
+            error,
+          };
+        } catch (error) {
+          console.log(error);
+        } finally {
+          this.buffer = Buffer.alloc(0);
+          done();
+        }
       });
     });
-    this._handleRequestError(request);
+  }
 
-    if (data) {
-      const body = JSON.stringify(data);
-      request.setHeader("content-length", body.length);
-      request.write(body);
-    }
-
-    request.end();
-    return request;
+  private async _inspector({ headers, statusCode }: InspectorParams) {
+    if (statusCode !== 429) return false;
+    const delay = parseFloat(headers["retry-after"]);
+    this.request.destroy();
+    await sleep(delay * 1000, "Retrying request");
   }
 
   /** Returns TRUE if we need to fail the request */
-  private async _inspector(error?: ResponseError): Promise<boolean> {
+  private _shouldFailRequest(error?: ResponseError): boolean {
     if (!error) return false;
-
     let failRequest = false;
-
-    const data = error.code == 429 ? this.response.headers["retry-after"] || "0" : error?.data 
-
-    eventEmitter.emit(SpaceEventsMap[error.code as keyof typeof SpaceEventsMap], data);
-
     if (error.code >= 500 && error.code < 4000) failRequest = true;
-
     return failRequest;
   }
 
@@ -104,15 +119,29 @@ export class RequestCreator {
     };
   }
 
-  async get<T>() {
-    return new Promise<Response<T>>((resolve) => {
-      this._builder(() => resolve(this.response));
+  async get<T>(): Promise<Response<T>> {
+    const response = await this._builder<T>();
+
+    const shouldRetry = await this._inspector({
+      headers: response.headers,
+      statusCode: response.statusCode,
     });
+
+    if (shouldRetry) return await this.get();
+
+    return response;
   }
 
-  async post<T>(data: AnyObject) {
-    return new Promise<Response<T | any>>((resolve) => {
-      this._builder(() => resolve(this.response), data);
+  async post<T>(data: AnyObject): Promise<Response<T>> {
+    const response = await this._builder<T>(data);
+
+    const shouldRetry = await this._inspector({
+      headers: response.headers,
+      statusCode: response.statusCode,
     });
+
+    if (shouldRetry) return await this.post<T>(data);
+
+    return response;
   }
 }

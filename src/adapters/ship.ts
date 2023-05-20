@@ -37,7 +37,7 @@ export const orbitShip = (shipSymbol: string) => {
 };
 
 export const extractShip = (shipSymbol: string) => {
-  return spacePost(API.EXTRACT_SHIP(shipSymbol));
+  return spacePost<any>(API.EXTRACT_SHIP(shipSymbol));
 };
 
 export const getDetailsShip = <T>(shipSymbol: string) => {

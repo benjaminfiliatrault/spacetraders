@@ -1,6 +1,7 @@
 import { RequestOptions } from "http";
 import { EventEmitter } from "stream";
 import { ReverseSpaceEventsMap, SpaceEventsMap } from "./utils/events.map";
+import logger from "./utils/logger";
 const eventEmitter = new EventEmitter();
 
 eventEmitter.on(ReverseSpaceEventsMap["INVALID_TOKEN"], async () => {

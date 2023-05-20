@@ -2,23 +2,19 @@ require("dotenv").config();
 import * as http from "node:http";
 import { main } from "./main";
 import log from "./utils/logger";
+import { getAccountInfo } from "./adapters/account";
 
 const PORT = 42069;
 
-(async() => {
-  
-
-
+(async () => {
   await main();
-
-
-})()
+})();
 
 // const server = http.createServer(async (req, res) => {
-  // try {
-  // } catch (error) {
-  //   console.error(error);
-  // }
+// try {
+// } catch (error) {
+//   console.error(error);
+// }
 
 //   let bodyRequest = "";
 //   res.on("data", (chunk) => (bodyRequest += chunk));

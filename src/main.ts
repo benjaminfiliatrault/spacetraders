@@ -25,7 +25,7 @@ export async function main() {
     const { system } = parseWaypoint(ship?.current?.nav.systemSymbol);
     const currentShipSystem = system;
 
-    const marketData = await waypointData.marketData(ship.current.nav.systemSymbol, currentShipWaypoint);
+    const marketData = await waypointData.marketData(ship?.current?.nav?.systemSymbol, currentShipWaypoint);
 
     const asteroid = await waypointData.findAsteroids(currentShipSystem);
 
@@ -34,11 +34,11 @@ export async function main() {
     }
 
     for await (const contract of data.contracts) {
-      const toDeliverSymbols: string[] = contract.terms.deliver.map((term) => term.tradeSymbol);
+      const toDeliverSymbols: string[] = contract?.terms?.deliver.map((term) => term.tradeSymbol);
       let contractFulfilled = contract?.fulfilled;
       // TODO: Change this not good 👇
       while (!contractFulfilled) {
-        let shipCargoFull = ship.current.cargo.capacity === ship.current.cargo.units;
+        let shipCargoFull = ship?.current?.cargo?.capacity === ship?.current?.cargo?.units;
 
         if (currentShipWaypoint !== asteroid.symbol && !shipCargoFull) {
           await ship.navigate({ waypoint: asteroid.symbol, needRefuel: false, where: asteroid.type });
@@ -49,7 +49,7 @@ export async function main() {
           logger.print("Extracting Ores");
           const extraction = await ship.extract();
 
-          if (extraction?.error || extraction?.body.cooldown) {
+          if (extraction?.error || extraction?.body?.cooldown) {
             const cooldownInMilli =
               extraction?.error?.data?.cooldown?.remainingSeconds || extraction?.body?.cooldown?.remainingSeconds;
             await sleep(cooldownInMilli * 1000, "Mining Ores");
@@ -64,8 +64,8 @@ export async function main() {
         await ship.details();
 
         const skipGoToMarket = ship?.current?.cargo?.inventory?.some((item) => {
-          // TODO: Won't work when a contract requires many different Items 
-          return toDeliverSymbols.includes(item.symbol) && item.units > 30
+          // TODO: Won't work when a contract requires many different Items
+          return toDeliverSymbols.includes(item.symbol) && item.units > 15;
         });
 
         if (!skipGoToMarket) {
@@ -101,7 +101,9 @@ export async function main() {
           }
         }
 
-        await sleep(2000, "Waiting")
+        await sleep(2000, "Waiting");
+
+        await ship.details();
 
         const contractDetails = await contractData.get(contract.id);
         contractFulfilled = contractDetails.fulfilled;
