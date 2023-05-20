@@ -38,6 +38,7 @@ export async function main() {
       let contractFulfilled = contract?.fulfilled;
       // TODO: Change this not good 👇
       while (!contractFulfilled) {
+
         let shipCargoFull = ship?.current?.cargo?.capacity === ship?.current?.cargo?.units;
 
         if (currentShipWaypoint !== asteroid.symbol && !shipCargoFull) {
@@ -65,7 +66,7 @@ export async function main() {
 
         const skipGoToMarket = ship?.current?.cargo?.inventory?.some((item) => {
           // TODO: Won't work when a contract requires many different Items
-          return toDeliverSymbols.includes(item.symbol) && item.units > 15;
+          return toDeliverSymbols.includes(item.symbol) && item.units == 30;
         });
 
         if (!skipGoToMarket) {
@@ -101,12 +102,10 @@ export async function main() {
           }
         }
 
-        await sleep(2000, "Waiting");
-
         await ship.details();
 
-        const contractDetails = await contractData.get(contract.id);
-        contractFulfilled = contractDetails.fulfilled;
+        const contractDetails = await contractData.get(contract?.id);
+        contractFulfilled = contractDetails?.fulfilled;
       }
     }
   } catch (error) {
